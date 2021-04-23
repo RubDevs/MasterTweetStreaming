@@ -26,6 +26,10 @@ async function getTweetsAndSendToRabbitMQ() {
       console.error("Error: ", error.message);
     }
   });
+  stream.on("error", (error) => {
+    Sentry.captureException(error);
+    console.error(error);
+  });
 }
 
 async function getTweetsFromRabbitMQandSaveToDB(queue) {

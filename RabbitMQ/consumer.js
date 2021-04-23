@@ -8,6 +8,7 @@ const Sentry = require("../utils/sentry");
 function getMessagesFromRabbitMQandSaveToDB(queue) {
   amqp.connect(urlRabbitMQ, (error, connection) => {
     if (error) {
+      Sentry.captureException(error);
       return console.error("Connection error: ", error);
     }
     connection.createChannel((error, channel) => {
@@ -24,13 +25,18 @@ function getMessagesFromRabbitMQandSaveToDB(queue) {
         if (message) {
           const msg = message.content.toString();
           //Save message to redis on list tweets
-          redis.save("tweets", msg).then((response) => {
-            if (response) {
-              //if message saved acknowledge RabbitMQ
-              console.log("Mensaje Guardado");
-              channel.ack(message);
-            }
-          });
+          redis
+            .save("tweets", msg)
+            .then((response) => {
+              if (response) {
+                //if message saved acknowledge RabbitMQ
+                console.log("Mensaje Guardado");
+                channel.ack(message);
+              }
+            })
+            .catch((error) => {
+              Sentry.captureException(error);
+            });
         }
       });
     });
