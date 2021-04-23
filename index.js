@@ -7,18 +7,24 @@ const errors = require("./network/errors");
 const Twitter = require("./tweets");
 const Publisher = require("./RabbitMQ/publisher");
 const Consumer = require("./RabbitMQ/consumer");
+const Sentry = require("./utils/sentry");
 
 async function getTweetsAndSendToRabbitMQ() {
   const stream = await Twitter.startStreaming();
   stream.on("data", (data) => {
-    const tweet = JSON.parse(data);
-    const tweetData = {
-      id: tweet.data.id,
-      text: tweet.data.text,
-      username: `@${tweet.includes.users[0].username}`,
-      link: `https://twitter.com/${tweet.includes.users[0].username}/status/${tweet.data.id}`,
-    };
-    Publisher.sendMessageToQueue("tweets", JSON.stringify(tweetData));
+    try {
+      const tweet = JSON.parse(data);
+      const tweetData = {
+        id: tweet.data.id,
+        text: tweet.data.text,
+        username: `@${tweet.includes.users[0].username}`,
+        link: `https://twitter.com/${tweet.includes.users[0].username}/status/${tweet.data.id}`,
+      };
+      Publisher.sendMessageToQueue("tweets", JSON.stringify(tweetData));
+    } catch (error) {
+      Sentry.captureException(error);
+      console.error("Error: ", error.message);
+    }
   });
 }
 

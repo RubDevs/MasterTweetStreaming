@@ -3,6 +3,7 @@ const amqp = require("amqplib/callback_api");
 const config = require("../config");
 const urlRabbitMQ = config.rabbitMQ.url;
 const redis = require("../store/redis");
+const Sentry = require("../utils/sentry");
 
 function getMessagesFromRabbitMQandSaveToDB(queue) {
   amqp.connect(urlRabbitMQ, (error, connection) => {
@@ -11,6 +12,7 @@ function getMessagesFromRabbitMQandSaveToDB(queue) {
     }
     connection.createChannel((error, channel) => {
       if (error) {
+        Sentry.captureException(error);
         return console.error("Channel error: ", error);
       }
 
