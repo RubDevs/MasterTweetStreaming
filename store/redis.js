@@ -6,9 +6,10 @@ const client = redis.createClient({
   password: config.redis.password,
 });
 
-function list(list) {
+//Get
+function list(list, start, end) {
   return new Promise((resolve, reject) => {
-    client.lrange(list, 1, 50, (error, data) => {
+    client.lrange(list, start, end, (error, data) => {
       if (error) {
         return reject(error);
       }
