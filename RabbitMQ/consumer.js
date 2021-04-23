@@ -4,7 +4,7 @@ const config = require("../config");
 const urlRabbitMQ = config.rabbitMQ.url;
 const redis = require("../store/redis");
 
-function getMessagesFromRabbitMQ(queue) {
+function getMessagesFromRabbitMQandSaveToDB(queue) {
   amqp.connect(urlRabbitMQ, (error, connection) => {
     if (error) {
       return console.error("Connection error: ", error);
@@ -25,6 +25,7 @@ function getMessagesFromRabbitMQ(queue) {
           redis.save("tweets", msg).then((response) => {
             if (response) {
               //if message saved acknowledge RabbitMQ
+              console.log("Mensaje Guardado");
               channel.ack(message);
             }
           });
@@ -35,5 +36,5 @@ function getMessagesFromRabbitMQ(queue) {
 }
 
 module.exports = {
-  getMessagesFromRabbitMQ,
+  getMessagesFromRabbitMQandSaveToDB,
 };
