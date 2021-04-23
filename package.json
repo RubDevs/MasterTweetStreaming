@@ -4,11 +4,15 @@
   "description": "a real-time tweet filtering app",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js",
+    "start": "node index.js"
   },
   "author": "Ruben Hernandez <ruben@rubdevs.com>",
   "license": "MIT",
   "dependencies": {
+    "@sentry/node": "^6.3.1",
+    "@sentry/tracing": "^6.3.1",
     "amqplib": "^0.7.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",

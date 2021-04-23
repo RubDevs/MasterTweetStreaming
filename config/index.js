@@ -15,4 +15,7 @@ module.exports = {
   api: {
     port: process.env.PORT,
   },
+  sentry: {
+    dsn: process.env.SENTRY_DSN,
+  },
 };
