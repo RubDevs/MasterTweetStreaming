@@ -2,6 +2,7 @@ require("dotenv").config();
 const amqp = require("amqplib/callback_api");
 const config = require("../config");
 const urlRabbitMQ = config.rabbitMQ.url;
+const redis = require("../store/redis");
 
 function getMessagesFromRabbitMQ(queue) {
   amqp.connect(urlRabbitMQ, (error, connection) => {
@@ -20,8 +21,13 @@ function getMessagesFromRabbitMQ(queue) {
       channel.consume(queue, (message) => {
         if (message) {
           const msg = message.content.toString();
-          console.log(msg);
-          channel.ack(message);
+
+          redis.save("tweets", msg).then((response) => {
+            if (response) {
+              channel.ack(message);
+              console.log(msg);
+            }
+          });
         }
       });
     });
