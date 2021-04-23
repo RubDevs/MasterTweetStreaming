@@ -21,11 +21,11 @@ function getMessagesFromRabbitMQ(queue) {
       channel.consume(queue, (message) => {
         if (message) {
           const msg = message.content.toString();
-
+          //Save message to redis on list tweets
           redis.save("tweets", msg).then((response) => {
             if (response) {
+              //if message saved acknowledge RabbitMQ
               channel.ack(message);
-              console.log(msg);
             }
           });
         }
