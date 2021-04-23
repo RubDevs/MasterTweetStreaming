@@ -1,4 +1,4 @@
-const response = require("../../../network/reponse");
+const response = require("../../../network/response");
 const express = require("express");
 const Controller = require("./index");
 

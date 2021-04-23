@@ -10,11 +10,7 @@ const streamURL =
   "https://api.twitter.com/2/tweets/search/stream?tweet.fields=public_metrics&expansions=author_id";
 
 //Rules, keywords to listen
-const rules = [
-  { value: "platzi" },
-  { value: "open source" },
-  { value: "node" },
-];
+const rules = [{ value: "platzi" }, { value: "nodejs" }];
 
 //Get stream rules
 async function getRules() {
