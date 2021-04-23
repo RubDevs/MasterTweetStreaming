@@ -1,6 +1,7 @@
 require("dotenv").config();
 const needle = require("needle");
 const config = require("../config");
+const Sentry = require("../utils/sentry");
 
 const TOKEN = config.twitter.BearerToken;
 
@@ -85,7 +86,8 @@ async function startStreaming() {
 
     await setRules();
   } catch (error) {
-    console.error(error);
+    Sentry.captureException(error);
+    return console.error(error);
   }
   return streamTweets();
 }
