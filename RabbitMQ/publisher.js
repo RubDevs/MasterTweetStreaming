@@ -10,17 +10,29 @@ function sendMessageToQueue(queue, message) {
   amqp.connect(urlRabbitMQ, (error, connection) => {
     if (error) {
       Sentry.captureException(error);
-      return console.error("Connection error: ", error);
+      console.error("Connection error: ", error);
+      return error;
     }
     connection.createChannel((error, channel) => {
       if (error) {
         Sentry.captureException(error);
-        return console.error("Channel error: ", error);
+        console.error("Channel error: ", error);
+        return error;
       }
 
-      channel.assertQueue(queue, {
-        durable: false,
-      });
+      channel.assertQueue(
+        queue,
+        {
+          durable: false,
+        },
+        (error, ok) => {
+          if (error) {
+            Sentry.captureException(error);
+            console.error("Error asserting queue: ", error);
+            return error;
+          }
+        }
+      );
 
       channel.sendToQueue(queue, Buffer.from(message));
       console.log("Mensaje enviado");
