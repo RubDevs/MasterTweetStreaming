@@ -1,42 +1,28 @@
-require("dotenv").config();
-const amqp = require("amqplib/callback_api");
-const config = require("../config");
-const urlRabbitMQ = config.rabbitMQ.url;
+const RabbitMQ = require("./index");
 const Sentry = require("../utils/sentry");
 
 //Send messages to queue
 function sendMessageToQueue(queue, message) {
-  //Create connection to RabbitMQ server
-  amqp.connect(urlRabbitMQ, (error, connection) => {
-    if (error) {
-      Sentry.captureException(error);
-      console.error("Connection error: ", error);
-      return error;
+  return new Promise(async (resolve, reject) => {
+    const connection =
+      RabbitMQ.RabbitMQ.Connection || (await RabbitMQ.connect());
+    if (!RabbitMQ.RabbitMQ.Channel) {
+      await RabbitMQ.createChannel(connection);
     }
-    connection.createChannel((error, channel) => {
-      if (error) {
-        Sentry.captureException(error);
-        console.error("Channel error: ", error);
-        return error;
-      }
-
-      channel.assertQueue(
-        queue,
-        {
-          durable: false,
-        },
-        (error, ok) => {
-          if (error) {
-            Sentry.captureException(error);
-            console.error("Error asserting queue: ", error);
-            return error;
-          }
+    RabbitMQ.RabbitMQ.Channel.assertQueue(
+      queue,
+      { durable: false },
+      (error, ok) => {
+        if (error) {
+          Sentry.captureException(error);
+          console.error("Error asserting queue: ", error);
+          return reject(error);
         }
-      );
-
-      channel.sendToQueue(queue, Buffer.from(message));
-      console.log("Mensaje enviado");
-    });
+      }
+    );
+    RabbitMQ.RabbitMQ.Channel.sendToQueue(queue, Buffer.from(message));
+    resolve(true);
+    console.log("Mensaje enviado");
   });
 }
 
