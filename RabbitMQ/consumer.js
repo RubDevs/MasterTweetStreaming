@@ -2,35 +2,36 @@ require("dotenv").config();
 const amqp = require("amqplib/callback_api");
 const config = require("../config");
 const urlRabbitMQ = config.rabbitMQ.url;
+const RabbitMQ = require("./index");
 const redis = require("../store/redis");
 const Sentry = require("../utils/sentry");
 
 function getMessagesFromRabbitMQ(queue) {
-  return new Promise((resolve, reject) => {
-    amqp.connect(urlRabbitMQ, (error, connection) => {
-      if (error) {
-        Sentry.captureException(error);
-        return reject(error);
-      }
-      connection.createChannel((error, channel) => {
+  return new Promise(async (resolve, reject) => {
+    const connection =
+      RabbitMQ.RabbitMQ.consumerConnection ||
+      (await RabbitMQ.connect("consumer"));
+    if (!RabbitMQ.RabbitMQ.consumerChannel) {
+      await RabbitMQ.createChannel(connection, "consumer");
+    }
+    RabbitMQ.RabbitMQ.consumerChannel.assertQueue(
+      queue,
+      { durable: false },
+      (error, ok) => {
         if (error) {
           Sentry.captureException(error);
+          console.error("Error asserting queue: ", error);
           return reject(error);
         }
-
-        channel.assertQueue(queue, {
-          durable: false,
-        });
-
-        channel.consume(queue, (message) => {
-          if (message) {
-            const msg = message.content.toString();
-            //Acknowledge RabbitMQ
-            channel.ack(message);
-            resolve(msg);
-          }
-        });
-      });
+      }
+    );
+    RabbitMQ.RabbitMQ.consumerChannel.consume(queue, (message) => {
+      if (message) {
+        const msg = message.content.toString();
+        //Acknowledge RabbitMQ
+        RabbitMQ.RabbitMQ.consumerChannel.ack(message);
+        resolve(msg);
+      }
     });
   });
 }
