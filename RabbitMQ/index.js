@@ -5,23 +5,29 @@ const Sentry = require("../utils/sentry");
 
 const RabbitMQ = {};
 
-function connect() {
+function connect(mode) {
   return new Promise((resolve, reject) => {
-    if (RabbitMQ.Connection) {
-      resolve(RabbitMQ.Connection);
-    }
     amqp.connect(urlRabbitMQ, (error, connection) => {
       if (error) {
         return reject(error);
       }
-      RabbitMQ.Connection = connection;
-      resolve(RabbitMQ.Connection);
+      if (mode == "publisher") {
+        RabbitMQ.publisherConnection = connection;
+        resolve(RabbitMQ.publisherConnection);
+      } else {
+        RabbitMQ.consumerConnection = connection;
+        resolve(RabbitMQ.consumerConnection);
+      }
     });
   });
 }
 
-async function createChannel(connection) {
-  RabbitMQ.Channel = await connection.createChannel();
+async function createChannel(connection, mode) {
+  if (mode == "publisher") {
+    RabbitMQ.publisherChannel = await connection.createChannel();
+  } else {
+    RabbitMQ.consumerChannel = await connection.createChannel();
+  }
 }
 
 module.exports = {

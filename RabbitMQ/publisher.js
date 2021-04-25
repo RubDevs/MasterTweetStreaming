@@ -5,11 +5,12 @@ const Sentry = require("../utils/sentry");
 function sendMessageToQueue(queue, message) {
   return new Promise(async (resolve, reject) => {
     const connection =
-      RabbitMQ.RabbitMQ.Connection || (await RabbitMQ.connect());
-    if (!RabbitMQ.RabbitMQ.Channel) {
-      await RabbitMQ.createChannel(connection);
+      RabbitMQ.RabbitMQ.publisherConnection ||
+      (await RabbitMQ.connect("publisher"));
+    if (!RabbitMQ.RabbitMQ.publisherChannel) {
+      await RabbitMQ.createChannel(connection, "publisher");
     }
-    RabbitMQ.RabbitMQ.Channel.assertQueue(
+    RabbitMQ.RabbitMQ.publisherChannel.assertQueue(
       queue,
       { durable: false },
       (error, ok) => {
@@ -20,7 +21,7 @@ function sendMessageToQueue(queue, message) {
         }
       }
     );
-    RabbitMQ.RabbitMQ.Channel.sendToQueue(queue, Buffer.from(message));
+    RabbitMQ.RabbitMQ.publisherChannel.sendToQueue(queue, Buffer.from(message));
     resolve(true);
     console.log("Mensaje enviado");
   });

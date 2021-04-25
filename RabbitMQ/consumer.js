@@ -9,11 +9,12 @@ const Sentry = require("../utils/sentry");
 function getMessagesFromRabbitMQ(queue) {
   return new Promise(async (resolve, reject) => {
     const connection =
-      RabbitMQ.RabbitMQ.Connection || (await RabbitMQ.connect());
-    if (!RabbitMQ.RabbitMQ.Channel) {
-      await RabbitMQ.createChannel(connection);
+      RabbitMQ.RabbitMQ.consumerConnection ||
+      (await RabbitMQ.connect("consumer"));
+    if (!RabbitMQ.RabbitMQ.consumerChannel) {
+      await RabbitMQ.createChannel(connection, "consumer");
     }
-    RabbitMQ.RabbitMQ.Channel.assertQueue(
+    RabbitMQ.RabbitMQ.consumerChannel.assertQueue(
       queue,
       { durable: false },
       (error, ok) => {
@@ -24,11 +25,11 @@ function getMessagesFromRabbitMQ(queue) {
         }
       }
     );
-    RabbitMQ.RabbitMQ.Channel.consume(queue, (message) => {
+    RabbitMQ.RabbitMQ.consumerChannel.consume(queue, (message) => {
       if (message) {
         const msg = message.content.toString();
         //Acknowledge RabbitMQ
-        channel.ack(message);
+        RabbitMQ.RabbitMQ.consumerChannel.ack(message);
         resolve(msg);
       }
     });
