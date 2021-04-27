@@ -12,7 +12,7 @@ function sendMessageToQueue(queue, message) {
     }
     RabbitMQ.RabbitMQ.publisherChannel.assertQueue(
       queue,
-      { durable: false },
+      { durable: true },
       (error, ok) => {
         if (error) {
           Sentry.captureException(error);
