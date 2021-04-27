@@ -25,8 +25,6 @@ async function getTweetsAndSendToRabbitMQ() {
       };
       //Send the tweet to RabbitMQ
       Publisher.sendMessageToQueue("tweets", JSON.stringify(tweetData));
-      //Get tweets and save them
-      getTweetsFromRabbitMQandSaveToDB("tweets");
     } catch (error) {
       Sentry.captureException(error);
       console.error("Error: ", error.message);
@@ -41,14 +39,23 @@ async function getTweetsAndSendToRabbitMQ() {
 }
 
 async function getTweetsFromRabbitMQandSaveToDB(queue) {
-  const tweet = await Consumer.getMessagesFromRabbitMQ(queue);
-  if (tweet) {
-    await redis.save("tweets", tweet);
-    console.log("Mensaje guardado");
-  }
+  const connection = await Consumer.connect();
+  const channel = await Consumer.getChannel(connection);
+  await Consumer.assertQueue(channel, queue);
+
+  channel.consume(queue, async (message) => {
+    const tweet = message.content.toString();
+    if (tweet) {
+      await redis.save("tweets", tweet);
+      console.log("Mensaje guardado");
+    }
+    //Acknowledge RabbitMQ
+    channel.ack(message);
+  });
 }
 
 getTweetsAndSendToRabbitMQ();
+getTweetsFromRabbitMQandSaveToDB("tweets");
 
 const app = express();
 
