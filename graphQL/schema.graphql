@@ -1,0 +1,10 @@
+type Tweet {
+  id: ID
+  text: String
+  username: String
+  link: String
+}
+
+type Query {
+  Tweets: [Tweet!]!
+}

@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const { graphqlHTTP } = require("express-graphql");
 
 const config = require("./config");
 const APItweet = require("./api/components/tweet/network");
@@ -9,6 +10,8 @@ const Publisher = require("./RabbitMQ/publisher");
 const Consumer = require("./RabbitMQ/consumer");
 const Sentry = require("./utils/sentry");
 const redis = require("./store/redis");
+const schema = require("./graphQL/schema");
+const resolvers = require("./graphQL/");
 
 async function getTweetsAndSendToRabbitMQ() {
   const stream = await Twitter.startStreaming();
@@ -64,6 +67,10 @@ app.use(express.json());
 
 //router
 app.use("/tweets", APItweet);
+app.use(
+  "/graphql",
+  graphqlHTTP({ schema, rootValue: resolvers, graphiql: true })
+);
 app.use(errors);
 
 app.listen(process.env.PORT || config.api.port, () => {
