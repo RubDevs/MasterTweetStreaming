@@ -66,7 +66,7 @@ const app = express();
 app.use(express.json());
 
 //router
-app.use("/tweets", APItweet);
+APItweet(app);
 app.use(
   "/graphql",
   graphqlHTTP({ schema, rootValue: resolvers, graphiql: true })

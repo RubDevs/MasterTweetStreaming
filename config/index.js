@@ -18,4 +18,5 @@ module.exports = {
   sentry: {
     dsn: process.env.SENTRY_DSN,
   },
+  dev: process.env.NODE_ENV == "dev",
 };
