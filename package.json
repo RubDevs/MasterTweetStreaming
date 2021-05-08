@@ -4,8 +4,8 @@
   "description": "a real-time tweet filtering app",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js",
+    "test": "NODE_ENV=dev mocha --exit",
+    "dev": "NODE_ENV=dev nodemon index.js",
     "start": "node index.js"
   },
   "author": "Ruben Hernandez <ruben@rubdevs.com>",
@@ -19,6 +19,12 @@
     "express-graphql": "^0.12.0",
     "graphql": "^15.5.0",
     "needle": "^2.6.0",
-    "redis": "^3.1.2"
+    "redis": "^3.1.2",
+    "supertest": "^6.1.3"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "mocha": "^8.4.0",
+    "nock": "^13.0.11"
   }
 }
