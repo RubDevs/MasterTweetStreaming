@@ -4,7 +4,8 @@
   "description": "a real-time tweet filtering app",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=dev mocha --exit",
+    "test:unit": "NODE_ENV=dev mocha  test/unit.*.js --exit",
+    "test:integration": "mocha test/integration.*.js --exit",
     "dev": "NODE_ENV=dev nodemon index.js",
     "start": "node index.js"
   },
